@@ -1,0 +1,7 @@
+config.js
+node_modules
+credentials.json
+token.json
+.env
+db.json
+coverage
