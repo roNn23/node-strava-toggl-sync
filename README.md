@@ -9,7 +9,7 @@ run if there were new or changed activities in the last days and sync them.
 
 ## What do I need?
 
-Everything to fill out the config file. Please read the comments in [.env.template](.env.template).
+Everything to fill in the configuration file. Please read the comments in [.env.template](.env.template).
 
 - Strava account
 - Strava API
