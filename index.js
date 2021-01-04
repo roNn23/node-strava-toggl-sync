@@ -91,4 +91,10 @@ const init = async () => {
   login();
 };
 
-init();
+try {
+  init();
+} catch (error) {
+  console.log("Whoops, there was an error:");
+  console.log(error);
+  process.exit();
+}
