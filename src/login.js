@@ -12,20 +12,19 @@ const stravaPassword = process.env.STRAVA_LOGIN_PASSWORD;
 const stravaClientID = process.env.STRAVA_CLIENT_ID;
 const stravaClientSecret = process.env.STRAVA_CLIENT_SECRET;
 
-const serverHost = process.env.SERVER_HOST;
-const serverPort = process.env.SERVER_PORT;
-
-const stravaAuthUrl = "http://www.strava.com/oauth/authorize";
-const stravaAuthScope = "read,activity:read_all";
-const stravaAuthRedirectUrl = `http://${serverHost}:${serverPort}/exchange_token`;
-const stravaAuthparameters = [
-  `client_id=${stravaClientID}`,
-  "response_type=code",
-  `redirect_uri=${stravaAuthRedirectUrl}`,
-  "approval_prompt=force",
-  `scope=${stravaAuthScope}`,
-];
-const stravaAuthFullUrl = `${stravaAuthUrl}?${stravaAuthparameters.join("&")}`;
+function createStravaAuthFullUrl(redirectHost) {
+  const stravaAuthUrl = "http://www.strava.com/oauth/authorize";
+  const stravaAuthScope = "read,activity:read_all";
+  const stravaAuthRedirectUrl = `http://${redirectHost}/exchange_token`;
+  const stravaAuthparameters = [
+    `client_id=${stravaClientID}`,
+    "response_type=code",
+    `redirect_uri=${stravaAuthRedirectUrl}`,
+    "approval_prompt=force",
+    `scope=${stravaAuthScope}`,
+  ];
+  return `${stravaAuthUrl}?${stravaAuthparameters.join("&")}`;
+}
 
 async function loggedInCheck(page) {
   await page.goto("https://www.strava.com/login");
@@ -56,10 +55,10 @@ async function signIn(page) {
   console.log(`✅ Login done by cookie 🍪`);
 }
 
-async function auth(page) {
+async function auth(page, redirectHost) {
   console.log(`🛠 Authenticate user with app`);
 
-  await page.goto(stravaAuthFullUrl);
+  await page.goto(createStravaAuthFullUrl(redirectHost));
 
   await page.click("#authorize");
 
@@ -100,11 +99,17 @@ async function setupBrowser() {
   return { page, browser };
 }
 
-module.exports = async () => {
+module.exports = async (redirectHost) => {
   const { page, browser } = await setupBrowser();
 
-  await signIn(page);
-  await auth(page);
+  try {
+    await signIn(page);
+    await auth(page, redirectHost);
+  } catch (error) {
+    console.log("Whoops, there was an error:");
+    console.log(error);
+    process.exit();
+  }
 
   await browser.close();
 };

@@ -3,14 +3,12 @@ if (process.env.NODE_ENV !== "production") {
 }
 const http = require("http");
 const https = require("https");
+const getPort = require("get-port");
 
 const stravaMail = process.env.STRAVA_LOGIN_MAIL;
 const stravaPassword = process.env.STRAVA_LOGIN_PASSWORD;
 const stravaClientID = process.env.STRAVA_CLIENT_ID;
 const stravaClientSecret = process.env.STRAVA_CLIENT_SECRET;
-
-const serverHost = process.env.SERVER_HOST;
-const serverPort = process.env.SERVER_PORT;
 
 const loadStravaData = (code, onLoadedData) => {
   var options = {
@@ -38,14 +36,14 @@ const loadStravaData = (code, onLoadedData) => {
   req.end();
 };
 
-const listenForExchangeToken = function (req, res, onLoadedData) {
+const listenForExchangeToken = function (req, res, onLoadedData, host) {
   const url = req.url;
 
   res.writeHead(200);
   res.end();
 
   if (url.match("exchange_token")) {
-    const parsedUrl = new URL(`http://${serverHost}${url}`);
+    const parsedUrl = new URL(`http://${host}${url}`);
     const code = parsedUrl.searchParams.get("code");
 
     console.log(`🖥  got the auth code`);
@@ -54,12 +52,12 @@ const listenForExchangeToken = function (req, res, onLoadedData) {
   }
 };
 
-module.exports = (onLoadedData) => {
+module.exports = async (host, port, onLoadedData) => {
   const server = http.createServer((req, res) => {
-    listenForExchangeToken(req, res, onLoadedData);
+    listenForExchangeToken(req, res, onLoadedData, host);
   }, onLoadedData);
 
-  server.listen(serverPort, serverHost, () => {
-    console.log(`🖥  Server is running on http://${serverHost}:${serverPort}`);
+  server.listen(port, host, () => {
+    console.log(`🖥  Server is running on http://${host}:${port}`);
   });
 };

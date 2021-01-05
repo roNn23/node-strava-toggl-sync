@@ -9,6 +9,7 @@ const compareRecentWithSavedActivites = require("./src/compareRecentWithSavedAct
 const syncToToggl = require("./src/syncToToggl");
 const { setupDb, db } = require("./src/database");
 const stravaApi = require("strava-v3");
+const getPort = require("get-port");
 
 const getActivitiesToSync = () => {
   return db
@@ -85,10 +86,12 @@ const onLoadedStravaUserData = async (userData) => {
 };
 
 const init = async () => {
+  const serverPort = await getPort();
+
   console.log(`Starting @ ${new Date()}`);
   setupDb();
-  startServer(onLoadedStravaUserData);
-  login();
+  startServer("localhost", serverPort, onLoadedStravaUserData);
+  login(`localhost:${serverPort}`);
 };
 
 try {
